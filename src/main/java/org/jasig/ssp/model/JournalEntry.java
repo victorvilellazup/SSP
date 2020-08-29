@@ -172,4 +172,16 @@ public class JournalEntry
 
 		return result;
 	}
+
+	public boolean hasJournalDetailsUsedForTransition() {
+		// search for a JournalStep that indicates a transition
+		for (final JournalEntryDetail detail : this.getJournalEntryDetails()) {
+			if (detail.getJournalStepJournalStepDetail().getJournalStep().isUsedForTransition()) {
+				// exit early because no need to loop through others
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
