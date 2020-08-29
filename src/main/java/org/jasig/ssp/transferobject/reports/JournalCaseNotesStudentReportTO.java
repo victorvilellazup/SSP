@@ -6,9 +6,9 @@
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License.  You may obtain a
  * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -20,42 +20,66 @@ package org.jasig.ssp.transferobject.reports;
 
 import org.jasig.ssp.model.Person;
 
-public class JournalCaseNotesStudentReportTO extends BaseStudentReportTO {
-	
-	public JournalCaseNotesStudentReportTO(){
-		super();
-	}
-	
-	public JournalCaseNotesStudentReportTO(BaseStudentReportTO person)
-	{
-		super(person);
-		caseNoteEntries = 0L;
-	}
-	
-	public JournalCaseNotesStudentReportTO(final Person model) {
-		super(model);
-		setCreatedDate(model.getCreatedDate());
-		caseNoteEntries = 0L;
-	}
+public class JournalCaseNotesStudentReportTO extends BaseStudentReportTO
+        implements Comparable<JournalCaseNotesStudentReportTO> {
 
-	private static final long serialVersionUID = 7431422387894606843L;
-	
-	Long caseNoteEntries;
+    public JournalCaseNotesStudentReportTO() {
+        super();
+    }
 
-	public Long getCaseNoteEntries() {
-		return caseNoteEntries;
-	}
-	public void setCaseNoteEntries(Long caseNoteEntries) {
-		this.caseNoteEntries = caseNoteEntries;
-	}
+    public JournalCaseNotesStudentReportTO(BaseStudentReportTO person) {
+        super(person);
+        caseNoteEntries = 0L;
+    }
 
-	String journalSourceName;
+    public JournalCaseNotesStudentReportTO(final Person model) {
+        super(model);
+        setCreatedDate(model.getCreatedDate());
+        caseNoteEntries = 0L;
+    }
 
-	public String getJournalSourceName() {
-		return journalSourceName;
-	}
+    private static final long serialVersionUID = 7431422387894606843L;
 
-	public void setJournalSourceName(String journalSourceName) {
-		this.journalSourceName = journalSourceName;
-	}
+    Long caseNoteEntries;
+
+    public Long getCaseNoteEntries() {
+        return caseNoteEntries;
+    }
+
+    public void setCaseNoteEntries(Long caseNoteEntries) {
+        this.caseNoteEntries = caseNoteEntries;
+    }
+
+    String journalSourceName;
+
+    public String getJournalSourceName() {
+        return journalSourceName;
+    }
+
+    public void setJournalSourceName(String journalSourceName) {
+        this.journalSourceName = journalSourceName;
+    }
+
+    @Override
+    public int compareTo(JournalCaseNotesStudentReportTO comp) {
+        int value = this.getLastName().compareToIgnoreCase(
+                comp.getLastName());
+
+        if (value != 0)
+            return value;
+        value = this.getFirstName().compareToIgnoreCase(
+                comp.getFirstName());
+
+        if (value != 0)
+            return value;
+        if (this.getMiddleName() == null && comp.getMiddleName() == null)
+            return 0;
+        if (this.getMiddleName() == null)
+            return -1;
+        if (comp.getMiddleName() == null)
+            return 1;
+
+        return this.getMiddleName().compareToIgnoreCase(
+                comp.getMiddleName());
+    }
 }

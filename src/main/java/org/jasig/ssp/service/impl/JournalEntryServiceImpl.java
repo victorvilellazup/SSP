@@ -35,7 +35,6 @@ import org.jasig.ssp.transferobject.reports.EntityStudentCountByCoachTO;
 import org.jasig.ssp.transferobject.reports.JournalCaseNotesStudentReportTO;
 import org.jasig.ssp.transferobject.reports.JournalStepSearchFormTO;
 import org.jasig.ssp.transferobject.reports.JournalStepStudentReportTO;
-import org.jasig.ssp.util.BaseStudentReportNameComparator;
 import org.jasig.ssp.util.sort.PagingWrapper;
 import org.jasig.ssp.util.sort.SortingAndPaging;
 import org.jasig.ssp.web.api.validation.ValidationException;
@@ -90,21 +89,18 @@ public class JournalEntryServiceImpl
         //1
         //1
             throws ObjectNotFoundException, ValidationException {
-                return saveEntry(obj);
-            }
-
-    @Override
-    public JournalEntry save(final JournalEntry obj)
-            throws ObjectNotFoundException, ValidationException {
-        return saveEntry(obj);
-    }
-
-    private JournalEntry saveEntry(JournalEntry obj) throws ObjectNotFoundException, ValidationException {
         final JournalEntry journalEntry = getDao().save(obj);
         checkForTransition(journalEntry);
         return journalEntry;
     }
 
+    @Override
+    public JournalEntry save(final JournalEntry obj)
+            throws ObjectNotFoundException, ValidationException {
+        final JournalEntry journalEntry = getDao().save(obj);
+        checkForTransition(journalEntry);
+        return journalEntry;
+    }
 
     private void checkForTransition(final JournalEntry journalEntry)
             throws ObjectNotFoundException, ValidationException {
@@ -197,7 +193,7 @@ public class JournalEntryServiceImpl
     }
 
     private static void sortByStudentName(List<JournalCaseNotesStudentReportTO> toSort) {
-        //1
-        Collections.sort(toSort, BaseStudentReportNameComparator::compare);
+
+        Collections.sort(toSort);
     }
 }
