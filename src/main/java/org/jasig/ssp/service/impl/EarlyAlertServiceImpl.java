@@ -588,16 +588,10 @@ public class EarlyAlertServiceImpl extends // NOPMD
     public Map<String, Object> fillTemplateParameters(
             @NotNull final EarlyAlert earlyAlert) {
 
-        ExceptionUtils.validateNotNull(earlyAlert, new IllegalArgumentException("EarlyAlert was missing."))
-
-        ExceptionUtils.validateNotNull(earlyAlert.getPerson(), new IllegalArgumentException("EarlyAlert.Person is missing."))
-
+        ExceptionUtils.validateNotNull(earlyAlert, new IllegalArgumentException("EarlyAlert was missing."));
+        ExceptionUtils.validateNotNull(earlyAlert.getPerson(), new IllegalArgumentException("EarlyAlert.Person is missing."));
         ExceptionUtils.validateNotNull(earlyAlert.getCreatedBy(), new IllegalArgumentException("EarlyAlert.CreatedBy is missing."));
-
         ExceptionUtils.validateNotNull(earlyAlert.getCampus(), new IllegalArgumentException("EarlyAlert.Campus is missing."));
-
-        ExceptionUtils.validateNotNull(earlyAlert.getCreatedBy(), new IllegalArgumentException("EarlyAlert.CreatedBy is missing."));
-
 
         final Map<String, Object> templateParameters = Maps.newHashMap();
 
