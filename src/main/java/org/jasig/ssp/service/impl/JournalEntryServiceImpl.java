@@ -6,9 +6,9 @@
  * Version 2.0 (the "License"); you may not use this file
  * except in compliance with the License.  You may obtain a
  * copy of the License at the following location:
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -35,6 +35,7 @@ import org.jasig.ssp.transferobject.reports.EntityStudentCountByCoachTO;
 import org.jasig.ssp.transferobject.reports.JournalCaseNotesStudentReportTO;
 import org.jasig.ssp.transferobject.reports.JournalStepSearchFormTO;
 import org.jasig.ssp.transferobject.reports.JournalStepStudentReportTO;
+import org.jasig.ssp.util.BaseStudentReportNameComparator;
 import org.jasig.ssp.util.sort.PagingWrapper;
 import org.jasig.ssp.util.sort.SortingAndPaging;
 import org.jasig.ssp.web.api.validation.ValidationException;
@@ -43,182 +44,157 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/*
+ initial complexity points: 33
+ 90% - 29
+ 80% - 26
+ 70% - 23
+ 60% - 19
+ 50% - 16
+ */
+
 @Service
 @Transactional
 public class JournalEntryServiceImpl
-	//1
-	//1
-		extends AbstractRestrictedPersonAssocAuditableService<JournalEntry>
-	//1
-		implements JournalEntryService {
+        //1
+        //1
+        extends AbstractRestrictedPersonAssocAuditableService<JournalEntry>
+        //1
+        implements JournalEntryService {
 
-	//1
-	@Autowired
-	private transient JournalEntryDao dao;
+    //1
+    @Autowired
+    private transient JournalEntryDao dao;
 
-	//1
-	@Autowired
-	private transient PersonProgramStatusService personProgramStatusService;
+    //1
+    @Autowired
+    private transient PersonProgramStatusService personProgramStatusService;
 
-	//1
-	@Autowired
-	private transient PersonDao personDao;
+    //1
+    @Autowired
+    private transient PersonDao personDao;
 
-	@Override
-	protected JournalEntryDao getDao() {
-		return dao;
-	}
+    @Override
+    protected JournalEntryDao getDao() {
+        return dao;
+    }
 
-	@Override
-	public JournalEntry create(final JournalEntry obj)
-			//1
-			//1
-			throws ObjectNotFoundException, ValidationException {
-		final JournalEntry journalEntry = getDao().save(obj);
-		checkForTransition(journalEntry);
-		return journalEntry;
-	}
+    @Override
+    public JournalEntry create(final JournalEntry obj)
+        //1
+        //1
+            throws ObjectNotFoundException, ValidationException {
+        final JournalEntry journalEntry = getDao().save(obj);
+        checkForTransition(journalEntry);
+        return journalEntry;
+    }
 
-	@Override
-	public JournalEntry save(final JournalEntry obj)
-			throws ObjectNotFoundException, ValidationException {
-		final JournalEntry journalEntry = getDao().save(obj);
-		checkForTransition(journalEntry);
-		return journalEntry;
-	}
+    @Override
+    public JournalEntry save(final JournalEntry obj)
+            throws ObjectNotFoundException, ValidationException {
+        final JournalEntry journalEntry = getDao().save(obj);
+        checkForTransition(journalEntry);
+        return journalEntry;
+    }
 
-	private void checkForTransition(final JournalEntry journalEntry)
-			throws ObjectNotFoundException, ValidationException {
-		// search for a JournalStep that indicates a transition
-		//1
-		//1
-		for (final JournalEntryDetail detail : journalEntry
-				.getJournalEntryDetails()) {
-			//1
-			if (detail.getJournalStepJournalStepDetail().getJournalStep()
-					.isUsedForTransition()) {
-				// is used for transition, so attempt to set program status
-				personProgramStatusService.setTransitionForStudent(journalEntry
-						.getPerson());
+    private void checkForTransition(final JournalEntry journalEntry)
+            throws ObjectNotFoundException, ValidationException {
+        // search for a JournalStep that indicates a transition
+        //1
+        //1
+        for (final JournalEntryDetail detail : journalEntry
+                .getJournalEntryDetails()) {
+            //1
+            if (detail.getJournalStepJournalStepDetail().getJournalStep()
+                    .isUsedForTransition()) {
+                // is used for transition, so attempt to set program status
+                personProgramStatusService.setTransitionForStudent(journalEntry
+                        .getPerson());
 
-				// exit early because no need to loop through others
-				return;
-			}
-		}
-	}
-	
-	@Override
-	//1
-	public Long getCountForCoach(Person coach, Date createDateFrom, Date createDateTo, List<UUID> studentTypeIds){
-		return dao.getJournalCountForCoach(coach, createDateFrom, createDateTo, studentTypeIds);
-	}
+                // exit early because no need to loop through others
+                return;
+            }
+        }
+    }
 
-	@Override
-	public Long getStudentCountForCoach(Person coach, Date createDateFrom, Date createDateTo, List<UUID> studentTypeIds) {
-		return dao.getStudentJournalCountForCoach(coach, createDateFrom, createDateTo, studentTypeIds);
-	}
-	
-	@Override
-	//1
-	//1
-	//1
-	public PagingWrapper<EntityStudentCountByCoachTO> getStudentJournalCountForCoaches(EntityCountByCoachSearchForm form){
-		return dao.getStudentJournalCountForCoaches(form);
-	}
-	
-	@Override
-	//1
-	//1
-	//1
-	public PagingWrapper<JournalStepStudentReportTO> getJournalStepStudentReportTOsFromCriteria(JournalStepSearchFormTO personSearchForm,  
-			SortingAndPaging sAndP){
-		return dao.getJournalStepStudentReportTOsFromCriteria(personSearchForm,  
-				sAndP);
-	}
-	
- 	@Override
-	//1
- 	public List<JournalCaseNotesStudentReportTO> getJournalCaseNoteStudentReportTOsFromCriteria(JournalStepSearchFormTO personSearchForm, SortingAndPaging sAndP) throws ObjectNotFoundException{
- 		 final List<JournalCaseNotesStudentReportTO> personsWithJournalEntries = dao.getJournalCaseNoteStudentReportTOsFromCriteria(personSearchForm, sAndP);
- 		 final Map<String, JournalCaseNotesStudentReportTO> map = new HashMap<String, JournalCaseNotesStudentReportTO>();
+    @Override
+    //1
+    public Long getCountForCoach(Person coach, Date createDateFrom, Date createDateTo, List<UUID> studentTypeIds) {
+        return dao.getJournalCountForCoach(coach, createDateFrom, createDateTo, studentTypeIds);
+    }
 
- 		 //1
- 		 for(JournalCaseNotesStudentReportTO entry:personsWithJournalEntries){
- 			 map.put(entry.getSchoolId(), entry);
- 		 }
+    @Override
+    public Long getStudentCountForCoach(Person coach, Date createDateFrom, Date createDateTo, List<UUID> studentTypeIds) {
+        return dao.getStudentJournalCountForCoach(coach, createDateFrom, createDateTo, studentTypeIds);
+    }
 
- 		 final SortingAndPaging personSAndP = SortingAndPaging.createForSingleSortAll(ObjectStatus.ACTIVE, "lastName", "DESC") ;
- 		 //1
- 		 final PagingWrapper<BaseStudentReportTO> persons = personDao.getStudentReportTOs(personSearchForm, personSAndP);
+    @Override
+    //1
+    //1
+    //1
+    public PagingWrapper<EntityStudentCountByCoachTO> getStudentJournalCountForCoaches(EntityCountByCoachSearchForm form) {
+        return dao.getStudentJournalCountForCoaches(form);
+    }
 
- 		 //1
- 		 if (persons == null) {
- 			 return personsWithJournalEntries;
- 		 }
+    @Override
+    //1
+    //1
+    //1
+    public PagingWrapper<JournalStepStudentReportTO> getJournalStepStudentReportTOsFromCriteria(JournalStepSearchFormTO personSearchForm,
+                                                                                                SortingAndPaging sAndP) {
+        return dao.getJournalStepStudentReportTOsFromCriteria(personSearchForm,
+                sAndP);
+    }
 
- 		 //1
- 		 for (BaseStudentReportTO person:persons) {
- 		 	//1
-			 if (!map.containsKey(person.getSchoolId()) && StringUtils.isNotBlank(person.getCoachSchoolId())) {
-				 boolean addStudent = true;
-				 //1
-				 if (personSearchForm.getJournalSourceIds()!=null) {
-				 	//1
-					if (getDao().getJournalCountForPersonForJournalSourceIds(person.getId(), personSearchForm.getJournalSourceIds()) == 0) {
-						addStudent = false;
-					}
-				 }
-				 //1
-			 	 if (addStudent) {
-					 final JournalCaseNotesStudentReportTO entry = new JournalCaseNotesStudentReportTO(person);
-					 personsWithJournalEntries.add(entry);
-					 map.put(entry.getSchoolId(), entry);
-				 }
- 			}
- 		 }
-		 sortByStudentName(personsWithJournalEntries);
+    @Override
+    //1
+    public List<JournalCaseNotesStudentReportTO> getJournalCaseNoteStudentReportTOsFromCriteria(JournalStepSearchFormTO personSearchForm, SortingAndPaging sAndP) throws ObjectNotFoundException {
+        final List<JournalCaseNotesStudentReportTO> personsWithJournalEntries = dao.getJournalCaseNoteStudentReportTOsFromCriteria(personSearchForm, sAndP);
+        final Map<String, JournalCaseNotesStudentReportTO> map = new HashMap<String, JournalCaseNotesStudentReportTO>();
 
- 		 return personsWithJournalEntries;
- 	}
- 		 
-	private static void sortByStudentName(List<JournalCaseNotesStudentReportTO> toSort) {
-		//1
-		Collections.sort(toSort,  new Comparator<JournalCaseNotesStudentReportTO>() {
-	        public int compare(JournalCaseNotesStudentReportTO p1, JournalCaseNotesStudentReportTO p2) {
-	        	
-	        	int value = p1.getLastName().compareToIgnoreCase(
-	     	                    p2.getLastName());
+        //1
+        for (JournalCaseNotesStudentReportTO entry : personsWithJournalEntries) {
+            map.put(entry.getSchoolId(), entry);
+        }
 
-	        	//1
-	        	if(value != 0)
-	        		return value;
-	        	
-	        	value = p1.getFirstName().compareToIgnoreCase(
- 	                    p2.getFirstName());
-	        	//1
-		       if(value != 0)
-        		 return value;
-		       //1
-		       if(p1.getMiddleName() == null && p2.getMiddleName() == null)
-		    	   return 0;
-		       //1
-		       if(p1.getMiddleName() == null)
-		    	   return -1;
-		       //1
-		       if(p2.getMiddleName() == null)
-		    	   return 1;
+        final SortingAndPaging personSAndP = SortingAndPaging.createForSingleSortAll(ObjectStatus.ACTIVE, "lastName", "DESC");
+        //1
+        final PagingWrapper<BaseStudentReportTO> persons = personDao.getStudentReportTOs(personSearchForm, personSAndP);
 
-		       return p1.getMiddleName().compareToIgnoreCase(
-	                    p2.getMiddleName());
-	        }
-	    });
-	}
+        //1
+        if (persons == null) {
+            return personsWithJournalEntries;
+        }
 
+        //1
+        for (BaseStudentReportTO person : persons) {
+            //1
+            if ((!map.containsKey(person.getSchoolId()) && StringUtils.isNotBlank(person.getCoachSchoolId()))
+                    && hasJournalForPersonForJournalSourceIds(personSearchForm, person)) {
+                final JournalCaseNotesStudentReportTO entry = new JournalCaseNotesStudentReportTO(person);
+                personsWithJournalEntries.add(entry);
+                map.put(entry.getSchoolId(), entry);
+            }
+        }
+
+        sortByStudentName(personsWithJournalEntries);
+
+        return personsWithJournalEntries;
+    }
+
+    private boolean hasJournalForPersonForJournalSourceIds(JournalStepSearchFormTO personSearchForm, BaseStudentReportTO person) {
+        return personSearchForm.getJournalSourceIds() != null
+                && getDao().getJournalCountForPersonForJournalSourceIds(person.getId(), personSearchForm.getJournalSourceIds()) > 0;
+    }
+
+    private static void sortByStudentName(List<JournalCaseNotesStudentReportTO> toSort) {
+        //1
+        Collections.sort(toSort, BaseStudentReportNameComparator::compare);
+    }
 }
