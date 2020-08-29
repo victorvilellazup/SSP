@@ -90,18 +90,21 @@ public class JournalEntryServiceImpl
         //1
         //1
             throws ObjectNotFoundException, ValidationException {
+                return saveEntry(obj);
+            }
+
+    @Override
+    public JournalEntry save(final JournalEntry obj)
+            throws ObjectNotFoundException, ValidationException {
+        return saveEntry(obj);
+    }
+
+    private JournalEntry saveEntry(JournalEntry obj) throws ObjectNotFoundException, ValidationException {
         final JournalEntry journalEntry = getDao().save(obj);
         checkForTransition(journalEntry);
         return journalEntry;
     }
 
-    @Override
-    public JournalEntry save(final JournalEntry obj)
-            throws ObjectNotFoundException, ValidationException {
-        final JournalEntry journalEntry = getDao().save(obj);
-        checkForTransition(journalEntry);
-        return journalEntry;
-    }
 
     private void checkForTransition(final JournalEntry journalEntry)
             throws ObjectNotFoundException, ValidationException {
